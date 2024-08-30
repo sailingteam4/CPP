@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 04:50:34 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/30 02:18:25 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/08/30 14:14:34 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ int main()
 			phonebook.AddContact();
 		else if (command == "SEARCH")
 			phonebook.SearchContact();
-		else if (command == "test")
-			phonebook.DisplayContact(phonebook.getContact(0));
 	}
 	return 0;
 }

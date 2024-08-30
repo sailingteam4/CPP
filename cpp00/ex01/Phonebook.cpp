@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:04:34 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/30 02:40:06 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/08/30 14:10:56 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,13 @@ void	Phonebook::AddContact(void)
 	while (!std::cin.eof() && str == "")
 	{
 		std::cout << "Enter " << this->_contacts[this->_current_index % 8].getFirstName() << "'s darkest secret: ";
-		if (std::getline(std::cin, str))
+		if (std::getline(std::cin, str) && str != "")
 		{
 			this->_contacts[this->_current_index % 8].setDarkestSecret(str);
-			std::cout << this->_contacts[this->_current_index % 8].getFirstName() << " added to phonebook on slot " << this->_current_index % 8 << "/8" << std::endl;
+			if (((this->_current_index + 1) % 9) == 0)
+				std::cout << this->_contacts[this->_current_index % 8].getFirstName() << " added to phonebook on slot " << 1 << "/8" << std::endl;
+			else
+				std::cout << this->_contacts[this->_current_index % 8].getFirstName() << " added to phonebook on slot " << (this->_current_index + 1) % 9 << "/8" << std::endl;
 		}
 	}
 	this->_current_index++;
@@ -123,29 +126,28 @@ int	Phonebook::SearchContactIndex(Contact contacts[8])
 	int			i;
 	std::string	str;
 
-	std::cout << " ---------------------------------------- " << std::endl;
-	std::cout << "| Index|First Name| Last Name|  Nickname |" << std::endl;
-	std::cout << "|----------------------------------------|" << std::endl;
+	std::cout << "|-------------------------------------------|" << std::endl;
+	std::cout << "|Index     |First Name|Last Name |  Nickname|" << std::endl;
+	std::cout << "|-------------------------------------------|" << std::endl;
 	i = 0;
 	c = '0';
-	while (++c <= 8)
+	while (++c <= '8')
 	{
-		std::cout << "DEBUG" << std::endl;
 		if (contacts[c - 1 - '0'].getFirstName().length())
 		{
 			i++;
 			str = c;
-			str = FixMaxLength(str, 10);
+			str = FixMaxLength(str, 9);
 			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getFirstName(), 10);
+			str = FixMaxLength(contacts[c - 1 - '0'].getFirstName(), 9);
 			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getLastName(), 10);
+			str = FixMaxLength(contacts[c - 1 - '0'].getLastName(), 9);
 			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getNickname(), 10);
+			str = FixMaxLength(contacts[c - 1 - '0'].getNickname(), 9);
 			std::cout << "|" << SpaceAdder(10 - str.length()) << str << "|" << std::endl;
 		}
 	}
-	std::cout << " ---------------------------------------- " << std::endl;
+	std::cout << "|-------------------------------------------|" << std::endl;
 	return (i);
 };
 

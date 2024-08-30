@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:01:22 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/22 03:21:48 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/08/30 01:34:28 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class Phonebook
 		// Utils
 		std::string SpaceAdder(int n);
 		std::string FixMaxLength(std::string str, long unsigned int max);
-		int 		SearchContactIndex(Contact contact[8]);
+		int 		SearchContactIndex(Contact contacts[8]);
 
 		// Main func
 		void 		AddContact(void);

@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:04:34 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/27 00:43:17 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/08/30 02:40:06 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,15 +117,58 @@ std::string Phonebook::FixMaxLength(std::string str, long unsigned int max)
 	return (str);	
 };
 
-int	Phonebook::SearchContactIndex(Contact contact[8])
+int	Phonebook::SearchContactIndex(Contact contacts[8])
 {
 	char		c;
 	int			i;
 	std::string	str;
 
-	std::cout << "------------------------------------------" << std::endl;
+	std::cout << " ---------------------------------------- " << std::endl;
 	std::cout << "| Index|First Name| Last Name|  Nickname |" << std::endl;
-	std::cout << "------------------------------------------" << std::endl;
+	std::cout << "|----------------------------------------|" << std::endl;
 	i = 0;
 	c = '0';
+	while (++c <= 8)
+	{
+		std::cout << "DEBUG" << std::endl;
+		if (contacts[c - 1 - '0'].getFirstName().length())
+		{
+			i++;
+			str = c;
+			str = FixMaxLength(str, 10);
+			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
+			str = FixMaxLength(contacts[c - 1 - '0'].getFirstName(), 10);
+			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
+			str = FixMaxLength(contacts[c - 1 - '0'].getLastName(), 10);
+			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
+			str = FixMaxLength(contacts[c - 1 - '0'].getNickname(), 10);
+			std::cout << "|" << SpaceAdder(10 - str.length()) << str << "|" << std::endl;
+		}
+	}
+	std::cout << " ---------------------------------------- " << std::endl;
+	return (i);
 };
+
+void	Phonebook::SearchContact(void)
+{
+	std::string	str;
+
+	if (!SearchContactIndex(this->_contacts))
+	{
+		std::cout << "No contact in phonebook" << std::endl;
+		return;
+	}
+	while (!std::cin.eof())
+	{
+		std::cout << "Enter index of the contact you want to display: ";
+		if (std::getline(std::cin, str) && str != "")
+		{
+			if (str.length() == 1 && str[0] >= '1' && str[0] <= '8' && !this->_contacts[str[0] - '0' - 1].getFirstName().empty())
+				break;
+		}
+		if (str != "")
+			std::cout << "Invalid index" << std::endl;
+	}
+	if (!std::cin.eof())
+		this->DisplayContact(this->_contacts[str[0] - '0' - 1]);
+}

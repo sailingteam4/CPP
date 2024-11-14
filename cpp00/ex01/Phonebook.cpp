@@ -36,7 +36,7 @@ void	Phonebook::AddContact(void)
 	{
 		std::cout << "[INFO] Overwriting contact : " << this->_contacts[this->_current_index % 8].getFirstName() << std::endl;
 	}
-	
+
 	while (!std::cin.eof() && str == "")
 	{
 		std::cout << "Enter first name: ";
@@ -107,17 +107,17 @@ std::string Phonebook::SpaceAdder(int n)
 	while (n--)
 		str.append(" ");
 	return (str);
-	
+
 };
 
 std::string Phonebook::FixMaxLength(std::string str, long unsigned int max)
 {
-	if (str.length() > max)
+	if (str.length() > max + 1)
 	{
-		str.resize(max);
-		str[max - 1] = '.';
+		str.resize(max + 1);
+		str[max] = '.';
 	}
-	return (str);	
+	return (str);
 };
 
 int	Phonebook::SearchContactIndex(Contact contacts[8])

@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:04:34 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/30 14:12:56 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/12/18 23:47:00 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,10 +71,9 @@ void	Phonebook::AddContact(void)
 		if (std::getline(std::cin, str) && str != "")
 		{
 			this->_contacts[this->_current_index % 8].setDarkestSecret(str);
-			if (((this->_current_index + 1) % 9) == 0)
-				std::cout << this->_contacts[this->_current_index % 8].getFirstName() << " added to phonebook on slot " << 1 << "/8" << std::endl;
-			else
-				std::cout << this->_contacts[this->_current_index % 8].getFirstName() << " added to phonebook on slot " << (this->_current_index + 1) % 9 << "/8" << std::endl;
+			std::cout << this->_contacts[this->_current_index % 8].getFirstName() 
+					 << " added to phonebook on slot " << (this->_current_index % 8) + 1 
+					 << "/8" << std::endl;
 		}
 	}
 	this->_current_index++;
@@ -154,23 +153,25 @@ int	Phonebook::SearchContactIndex(Contact contacts[8])
 void	Phonebook::SearchContact(void)
 {
 	std::string	str;
+	int valid_contacts = SearchContactIndex(this->_contacts);
 
-	if (!SearchContactIndex(this->_contacts))
+	if (!valid_contacts)
 	{
 		std::cout << "No contact in phonebook" << std::endl;
 		return;
 	}
-	while (!std::cin.eof())
+	std::cout << "Enter index of the contact you want to display: ";
+	while (!std::cin.eof() && std::getline(std::cin, str))
 	{
-		std::cout << "Enter index of the contact you want to display: ";
-		if (std::getline(std::cin, str) && str != "")
+		if (str.length() == 1 && str[0] >= '1' && str[0] <= '8')
 		{
-			if (str.length() == 1 && str[0] >= '1' && str[0] <= '8' && !this->_contacts[str[0] - '0' - 1].getFirstName().empty())
-				break;
+			int index = str[0] - '0' - 1;
+			if (!this->_contacts[index].getFirstName().empty())
+			{
+				this->DisplayContact(this->_contacts[index]);
+				return;
+			}
 		}
-		if (str != "")
-			std::cout << "Invalid index" << std::endl;
+		std::cout << "Invalid index, please try again: ";
 	}
-	if (!std::cin.eof())
-		this->DisplayContact(this->_contacts[str[0] - '0' - 1]);
 }

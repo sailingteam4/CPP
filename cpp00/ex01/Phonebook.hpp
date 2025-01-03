@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:01:22 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/30 01:34:28 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/12/26 19:08:29 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,25 +20,21 @@
 class Phonebook
 {
 	private:
-		Contact _contacts[8];
-		int _current_index;
-	
+		Contact		_contacts[8];
+		int			_current_index;
+		
+		static std::string SpaceAdder(int n);
+		static std::string FixMaxLength(std::string str, long unsigned int max);
+		static void DisplayContact(Contact contact);
+		static int SearchContactIndex(Contact contacts[8]);
+		Contact getContact(int index) const;
+
 	public:
 		Phonebook();
 		~Phonebook();
-		
 
-		// Utils
-		std::string SpaceAdder(int n);
-		std::string FixMaxLength(std::string str, long unsigned int max);
-		int 		SearchContactIndex(Contact contacts[8]);
-
-		// Main func
-		void 		AddContact(void);
-		void 		SearchContact(void);
-		void 		DisplayContact(Contact contact);
-
-		Contact 	getContact(int index) const;
+		void AddContact(void);
+		void SearchContact(void);
 };
 
 #endif

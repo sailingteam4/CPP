@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/12 06:51:26 by nrontey           #+#    #+#             */
-/*   Updated: 2024/08/13 02:57:10 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/12/20 14:20:15 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,17 @@ class Contact
 		Contact();
 		~Contact();
 		
-		// Getters
 		std::string getFirstName() const;
 		std::string getLastName() const;
 		std::string getNickname() const;
 		std::string getPhoneNumber() const;
 		std::string getDarkestSecret() const;
 
-		// Setters
-		void setFirstName(std::string first_name);
-		void setLastName(std::string last_name);
-		void setNickname(std::string nickname);
-		void setPhoneNumber(std::string phone_number);
-		void setDarkestSecret(std::string darkest_secret);
+		void		setFirstName(std::string first_name);
+		void		setLastName(std::string last_name);
+		void		setNickname(std::string nickname);
+		void		setPhoneNumber(std::string phone_number);
+		void		setDarkestSecret(std::string darkest_secret);
 };
 
 #endif

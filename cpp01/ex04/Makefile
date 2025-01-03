@@ -6,11 +6,11 @@
 #    By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/02 23:33:55 by nrontey           #+#    #+#              #
-#    Updated: 2024/08/02 23:36:28 by nrontey          ###   ########.fr        #
+#    Updated: 2025/01/02 16:41:51 by nrontey          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CXX = g++
+CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = Sed

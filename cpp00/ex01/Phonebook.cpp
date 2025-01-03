@@ -6,13 +6,14 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 03:04:34 by nrontey           #+#    #+#             */
-/*   Updated: 2024/12/18 23:47:00 by nrontey          ###   ########.fr       */
+/*   Updated: 2024/12/26 19:08:39 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Phonebook.hpp"
 #include <iostream>
 #include <string>
+#include <iomanip>
 
 Phonebook::Phonebook()
 {
@@ -121,32 +122,33 @@ std::string Phonebook::FixMaxLength(std::string str, long unsigned int max)
 
 int	Phonebook::SearchContactIndex(Contact contacts[8])
 {
-	char		c;
 	int			i;
 	std::string	str;
+	const int	col_width = 10;
+	const char	separator = '|';
 
-	std::cout << "|-------------------------------------------|" << std::endl;
-	std::cout << "|Index     |First Name|Last Name |  Nickname|" << std::endl;
-	std::cout << "|-------------------------------------------|" << std::endl;
+	std::cout << separator << std::setfill('-') << std::setw(44) << separator << std::endl;
+	std::cout << separator << std::setfill(' ')
+			  << std::setw(col_width) << "Index" << separator
+			  << std::setw(col_width) << "First Name" << separator
+			  << std::setw(col_width) << "Last Name" << separator
+			  << std::setw(col_width) << "Nickname" << separator << std::endl;
+	std::cout << separator << std::setfill('-') << std::setw(44) << separator << std::endl;
+	
 	i = 0;
-	c = '0';
-	while (++c <= '8')
+	for (int c = 1; c <= 8; c++)
 	{
-		if (contacts[c - 1 - '0'].getFirstName().length())
+		if (contacts[c - 1].getFirstName().length())
 		{
 			i++;
-			str = c;
-			str = FixMaxLength(str, 9);
-			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getFirstName(), 9);
-			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getLastName(), 9);
-			std::cout << "|" << SpaceAdder(10 - str.length()) << str;
-			str = FixMaxLength(contacts[c - 1 - '0'].getNickname(), 9);
-			std::cout << "|" << SpaceAdder(10 - str.length()) << str << "|" << std::endl;
+			std::cout << separator << std::setfill(' ')
+					  << std::setw(col_width) << c << separator
+					  << std::setw(col_width) << FixMaxLength(contacts[c - 1].getFirstName(), 9) << separator
+					  << std::setw(col_width) << FixMaxLength(contacts[c - 1].getLastName(), 9) << separator
+					  << std::setw(col_width) << FixMaxLength(contacts[c - 1].getNickname(), 9) << separator << std::endl;
 		}
 	}
-	std::cout << "|-------------------------------------------|" << std::endl;
+	std::cout << separator << std::setfill('-') << std::setw(44) << separator << std::endl;
 	return (i);
 };
 

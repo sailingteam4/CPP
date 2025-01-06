@@ -1,23 +1,32 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Zombie.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/06 12:30:59 by nrontey           #+#    #+#             */
+/*   Updated: 2025/01/06 12:32:22 by nrontey          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef ZOMBIE_H
 #define ZOMBIE_H
 
-#include <string>
 #include <iostream>
 
-typedef std::string str;
+class Zombie
+{
+	private:
+		std::string name;
 
-class Zombie {
 	public:
 		Zombie();
+		void setZombieName(std::string zombieName);
+		void announce(void);
 		~Zombie();
-
-		void			setName(str name);
-		void			announce() const;
-
-	private:
-		str		name;
 };
 
-Zombie	*zombieHorde(int n, str name);
+Zombie* zombieHorde( int N, std::string name );
 
 #endif

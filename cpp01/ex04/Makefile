@@ -6,7 +6,7 @@
 #    By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/02 23:33:55 by nrontey           #+#    #+#              #
-#    Updated: 2025/01/02 16:41:51 by nrontey          ###   ########.fr        #
+#    Updated: 2025/01/06 13:44:23 by nrontey          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = Sed
 
-src = main.cpp Replacer.cpp
+src = main.cpp
 
 obj = $(src:.cpp=.o)
 

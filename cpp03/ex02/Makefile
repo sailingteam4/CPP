@@ -6,16 +6,16 @@
 #    By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/02 23:33:55 by nrontey           #+#    #+#              #
-#    Updated: 2025/01/13 17:17:46 by nrontey          ###   ########.fr        #
+#    Updated: 2025/01/13 21:08:14 by nrontey          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
-NAME = ClapTrap
+NAME = FragTrap
 
-src = main.cpp ClapTrap.cpp
+src = main.cpp ClapTrap.cpp ScavTrap.cpp FragTrap.cpp
 
 obj = $(src:.cpp=.o)
 

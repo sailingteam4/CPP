@@ -6,12 +6,13 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 00:04:32 by nrontey           #+#    #+#             */
-/*   Updated: 2025/01/15 23:56:11 by nrontey          ###   ########.fr       */
+/*   Updated: 2025/01/16 14:12:14 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cat.hpp"
 #include "Dog.hpp"
+#include "WrongCat.hpp"
 
 int main()
 {
@@ -79,7 +80,23 @@ int main()
 
     cat4 = cat3;
 
-    std::cout << "----- End of tests destructors here -----" << std::endl;
+	std::cout << std::endl << "----- WrongAnimal tests -----" << std::endl << std::endl;
+
+	WrongAnimal* test = new WrongAnimal();
+	Cat* cat5 = new Cat();
+
+	cat5->makeSound();
+	test->makeSound();
+
+	std::cout << std::endl << "----- WrongAnimal destructor tests -----" << std::endl << std::endl;
+
+	delete test;
+
+	std::cout << std::endl << "----- Cat destructor tests -----" << std::endl << std::endl;
+
+	delete cat5;
+
+    std::cout << "----- Destructors here -----" << std::endl;
 
     return 0;
 }

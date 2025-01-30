@@ -5,36 +5,13 @@
 #                                                     +:+ +:+         +:+      #
 #    By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/08/02 23:33:55 by nrontey           #+#    #+#              #
-#    Updated: 2025/01/30 11:27:25 by nrontey          ###   ########.fr        #
+#    Created: 2025/01/30 11:26:03 by nrontey           #+#    #+#              #
+#    Updated: 2025/01/30 11:30:34 by nrontey          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+NAME = form
 
-NAME ?= mommy
+src = Bureaucrat.cpp Form.cpp
 
-src ?= Bureaucrat.cpp
-
-src += main.cpp
-
-obj = $(src:.cpp=.o)
-
-all: $(NAME)
-
-$(NAME): $(obj)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(obj)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-clean:
-	rm -f $(obj)
-
-fclean: clean
-	rm -f $(NAME)
-
-re: fclean all
-
-.PHONY: all clean fclean re
+include ../ex00/Makefile

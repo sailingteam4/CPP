@@ -12,6 +12,6 @@
 
 NAME = animal
 
-src = AAnimal.cpp Dog.cpp Cat.cpp Brain.cpp
+src = AAnimal.cpp Dog.cpp Cat.cpp Brain.cpp WrongAnimal.cpp WrongCat.cpp
 
 include ../ex00/Makefile

@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 23:59:47 by nrontey           #+#    #+#             */
-/*   Updated: 2025/01/16 14:19:04 by nrontey          ###   ########.fr       */
+/*   Updated: 2025/01/14 00:01:33 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class WrongAnimal
         WrongAnimal();
         WrongAnimal(const WrongAnimal &other);
         WrongAnimal     &operator=(const WrongAnimal &other);
-        ~WrongAnimal();
+        virtual         ~WrongAnimal();
 
         std::string     getType() const;
         void            makeSound() const;

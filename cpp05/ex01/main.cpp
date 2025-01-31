@@ -6,11 +6,12 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/27 15:57:00 by nrontey           #+#    #+#             */
-/*   Updated: 2025/01/27 18:10:56 by nrontey          ###   ########.fr       */
+/*   Updated: 2025/01/30 14:35:14 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Bureaucrat.hpp"
+#include "Form.hpp"
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -24,19 +25,30 @@ void printTitle(const std::string& title) {
     std::cout << MAGENTA << "\n=== " << title << " ===" << RESET << std::endl;
 }
 
-void testBureaucrat(const std::string& name, int grade) {
+void testFormCreation(const std::string& name, int signGrade, int execGrade) {
     try {
-        std::cout << BLUE << "\nTesting Bureaucrat(" << name << ", " << grade << ")" << RESET << std::endl;
-        Bureaucrat b(name, grade);
-        std::cout << GREEN << "Success: " << b << RESET << std::endl;
+        std::cout << BLUE << "\nTesting Form creation: " << name 
+                 << " (Sign: " << signGrade << ", Exec: " << execGrade << ")" << RESET << std::endl;
+        Form f(name, signGrade, execGrade);
+        std::cout << GREEN << "Success: " << f << RESET << std::endl;
+    }
+    catch (std::exception& e) {
+        std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
+    }
+}
+
+void testFormSigning(const std::string& bureaucratName, int bureaucratGrade,
+                    const std::string& formName, int formSignGrade, int formExecGrade) {
+    try {
+        Bureaucrat b(bureaucratName, bureaucratGrade);
+        Form f(formName, formSignGrade, formExecGrade);
         
-        std::cout << YELLOW << "Testing promotion..." << RESET << std::endl;
-        b.promote();
-        std::cout << GREEN << "After promotion: " << b << RESET << std::endl;
+        std::cout << BLUE << "\nTesting form signing:" << RESET << std::endl;
+        std::cout << CYAN << "Bureaucrat: " << b << RESET << std::endl;
+        std::cout << CYAN << "Form: " << f << RESET << std::endl;
         
-        std::cout << YELLOW << "Testing demotion..." << RESET << std::endl;
-        b.unmote();
-        std::cout << GREEN << "After demotion: " << b << RESET << std::endl;
+        b.signForm(f);
+        std::cout << GREEN << "After signing attempt: " << f << RESET << std::endl;
     }
     catch (std::exception& e) {
         std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
@@ -45,56 +57,66 @@ void testBureaucrat(const std::string& name, int grade) {
 
 int main()
 {
-    printTitle("BUREAUCRAT TESTS");
-
-    testBureaucrat("Normal Bob", 75);
-    testBureaucrat("High Grade Alice", 2);
-    testBureaucrat("Low Grade Charlie", 149);
-
-    printTitle("INVALID GRADE TESTS");
-    testBureaucrat("Too High Dave", 0);
-    testBureaucrat("Too Low Eve", 151);
-
-    printTitle("EDGE CASES TESTS");
+    printTitle("FORM CREATION TESTS");
     
-    try {
-        std::cout << BLUE << "\nTesting highest possible grade (1)" << RESET << std::endl;
-        Bureaucrat high("Max", 1);
-        std::cout << GREEN << high << RESET << std::endl;
-        std::cout << YELLOW << "Attempting promotion..." << RESET << std::endl;
-        high.promote();
-    }
-    catch (std::exception& e) {
-        std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
-    }
+    testFormCreation("Normal Form", 75, 75);
+    testFormCreation("High Grade Form", 1, 1);
+    testFormCreation("Low Grade Form", 150, 150);
+    testFormCreation("Invalid High Form", 0, 75);
+    testFormCreation("Invalid Low Form", 151, 75);
+    testFormCreation("Mixed Grades Form", 100, 50);
 
-    try {
-        std::cout << BLUE << "\nTesting lowest possible grade (150)" << RESET << std::endl;
-        Bureaucrat low("Min", 150);
-        std::cout << GREEN << low << RESET << std::endl;
-        std::cout << YELLOW << "Attempting demotion..." << RESET << std::endl;
-        low.unmote();
-    }
-    catch (std::exception& e) {
-        std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
-    }
+    printTitle("FORM SIGNING TESTS");
 
-    printTitle("COPY AND ASSIGNMENT TESTS");
+    // Test successful signing
+    testFormSigning("Manager", 1, "Easy Form", 75, 75);
     
+    // Test failed signing due to low grade
+    testFormSigning("Intern", 150, "Difficult Form", 1, 1);
+    
+    // Test signing with edge cases
+    testFormSigning("Supervisor", 50, "Medium Form", 50, 50);
+
+    printTitle("FORM COPY AND ASSIGNMENT TESTS");
+
     try {
-        Bureaucrat original("Original", 42);
+        Form original("Original", 42, 42);
         std::cout << CYAN << "Original: " << original << RESET << std::endl;
         
-        Bureaucrat copy(original);
+        Form copy(original);
         std::cout << CYAN << "Copy: " << copy << RESET << std::endl;
         
-        Bureaucrat assigned;
+        Form assigned("Temp", 100, 100);
         assigned = original;
         std::cout << CYAN << "Assigned: " << assigned << RESET << std::endl;
     }
     catch (std::exception& e) {
         std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
     }
+
+    printTitle("MULTIPLE SIGNING ATTEMPTS TEST");
+
+    try {
+        Bureaucrat boss("Boss", 1);
+        Bureaucrat intern("Intern", 150);
+        Form important("Important Document", 50, 50);
+
+        std::cout << YELLOW << "\nInitial form state:" << RESET << std::endl;
+        std::cout << important << std::endl;
+
+        std::cout << YELLOW << "\nIntern trying to sign:" << RESET << std::endl;
+        intern.signForm(important);
+
+        std::cout << YELLOW << "\nBoss trying to sign:" << RESET << std::endl;
+        boss.signForm(important);
+
+        std::cout << YELLOW << "\nBoss trying to sign again:" << RESET << std::endl;
+        boss.signForm(important);
+    }
+    catch (std::exception& e) {
+        std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
+    }
+
 
     return 0;
 }

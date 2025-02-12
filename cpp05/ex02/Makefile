@@ -6,12 +6,12 @@
 #    By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/30 11:26:03 by nrontey           #+#    #+#              #
-#    Updated: 2025/02/04 16:59:07 by nrontey          ###   ########.fr        #
+#    Updated: 2025/02/11 23:19:18 by nrontey          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = AForm
+NAME = Forms
 
-src = Bureaucrat.cpp AForm.cpp
+src = Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp
 
 include ../ex00/Makefile

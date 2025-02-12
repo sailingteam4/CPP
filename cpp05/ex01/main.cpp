@@ -6,12 +6,12 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/27 15:57:00 by nrontey           #+#    #+#             */
-/*   Updated: 2025/02/04 16:59:07 by nrontey          ###   ########.fr       */
+/*   Updated: 2025/02/12 00:48:23 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Bureaucrat.hpp"
-#include "AForm.hpp"
+#include "Form.hpp"
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -25,11 +25,11 @@ void printTitle(const std::string& title) {
     std::cout << MAGENTA << "\n=== " << title << " ===" << RESET << std::endl;
 }
 
-void testAFormCreation(const std::string& name, int signGrade, int execGrade) {
+void testFormCreation(const std::string& name, int signGrade, int execGrade) {
     try {
-        std::cout << BLUE << "\nTesting AForm creation: " << name 
+        std::cout << BLUE << "\nTesting Form creation: " << name 
                  << " (Sign: " << signGrade << ", Exec: " << execGrade << ")" << RESET << std::endl;
-        AForm f(name, signGrade, execGrade);
+        Form f(name, signGrade, execGrade);
         std::cout << GREEN << "Success: " << f << RESET << std::endl;
     }
     catch (std::exception& e) {
@@ -37,17 +37,17 @@ void testAFormCreation(const std::string& name, int signGrade, int execGrade) {
     }
 }
 
-void testAFormSigning(const std::string& bureaucratName, int bureaucratGrade,
-                    const std::string& AFormName, int AFormSignGrade, int AFormExecGrade) {
+void testFormSigning(const std::string& bureaucratName, int bureaucratGrade,
+                    const std::string& FormName, int FormSignGrade, int FormExecGrade) {
     try {
         Bureaucrat b(bureaucratName, bureaucratGrade);
-        AForm f(AFormName, AFormSignGrade, AFormExecGrade);
+        Form f(FormName, FormSignGrade, FormExecGrade);
         
-        std::cout << BLUE << "\nTesting AForm signing:" << RESET << std::endl;
+        std::cout << BLUE << "\nTesting Form signing:" << RESET << std::endl;
         std::cout << CYAN << "Bureaucrat: " << b << RESET << std::endl;
-        std::cout << CYAN << "AForm: " << f << RESET << std::endl;
+        std::cout << CYAN << "Form: " << f << RESET << std::endl;
         
-        b.signAForm(f);
+        b.signForm(f);
         std::cout << GREEN << "After signing attempt: " << f << RESET << std::endl;
     }
     catch (std::exception& e) {
@@ -57,36 +57,36 @@ void testAFormSigning(const std::string& bureaucratName, int bureaucratGrade,
 
 int main()
 {
-    printTitle("AForm CREATION TESTS");
+    printTitle("Form CREATION TESTS");
     
-    testAFormCreation("Normal AForm", 75, 75);
-    testAFormCreation("High Grade AForm", 1, 1);
-    testAFormCreation("Low Grade AForm", 150, 150);
-    testAFormCreation("Invalid High AForm", 0, 75);
-    testAFormCreation("Invalid Low AForm", 151, 75);
-    testAFormCreation("Mixed Grades AForm", 100, 50);
+    testFormCreation("Normal Form", 75, 75);
+    testFormCreation("High Grade Form", 1, 1);
+    testFormCreation("Low Grade Form", 150, 150);
+    testFormCreation("Invalid High Form", 0, 75);
+    testFormCreation("Invalid Low Form", 151, 75);
+    testFormCreation("Mixed Grades Form", 100, 50);
 
-    printTitle("AForm SIGNING TESTS");
+    printTitle("Form SIGNING TESTS");
 
     // Test successful signing
-    testAFormSigning("Manager", 1, "Easy AForm", 75, 75);
+    testFormSigning("Manager", 1, "Easy Form", 75, 75);
     
     // Test failed signing due to low grade
-    testAFormSigning("Intern", 150, "Difficult AForm", 1, 1);
+    testFormSigning("Intern", 150, "Difficult Form", 1, 1);
     
     // Test signing with edge cases
-    testAFormSigning("Supervisor", 50, "Medium AForm", 50, 50);
+    testFormSigning("Supervisor", 50, "Medium Form", 50, 50);
 
-    printTitle("AForm COPY AND ASSIGNMENT TESTS");
+    printTitle("Form COPY AND ASSIGNMENT TESTS");
 
     try {
-        AForm original("Original", 42, 42);
+        Form original("Original", 42, 42);
         std::cout << CYAN << "Original: " << original << RESET << std::endl;
         
-        AForm copy(original);
+        Form copy(original);
         std::cout << CYAN << "Copy: " << copy << RESET << std::endl;
         
-        AForm assigned("Temp", 100, 100);
+        Form assigned("Temp", 100, 100);
         assigned = original;
         std::cout << CYAN << "Assigned: " << assigned << RESET << std::endl;
     }
@@ -99,19 +99,19 @@ int main()
     try {
         Bureaucrat boss("Boss", 1);
         Bureaucrat intern("Intern", 150);
-        AForm important("Important Document", 50, 50);
+        Form important("Important Document", 50, 50);
 
-        std::cout << YELLOW << "\nInitial AForm state:" << RESET << std::endl;
+        std::cout << YELLOW << "\nInitial Form state:" << RESET << std::endl;
         std::cout << important << std::endl;
 
         std::cout << YELLOW << "\nIntern trying to sign:" << RESET << std::endl;
-        intern.signAForm(important);
+        intern.signForm(important);
 
         std::cout << YELLOW << "\nBoss trying to sign:" << RESET << std::endl;
-        boss.signAForm(important);
+        boss.signForm(important);
 
         std::cout << YELLOW << "\nBoss trying to sign again:" << RESET << std::endl;
-        boss.signAForm(important);
+        boss.signForm(important);
     }
     catch (std::exception& e) {
         std::cout << RED << "Exception: " << e.what() << RESET << std::endl;

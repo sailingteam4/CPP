@@ -6,7 +6,7 @@
 /*   By: nrontey <nrontey@student.42angouleme.fr    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/27 15:57:00 by nrontey           #+#    #+#             */
-/*   Updated: 2025/02/11 23:19:02 by nrontey          ###   ########.fr       */
+/*   Updated: 2025/02/12 00:25:08 by nrontey          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "ShrubberyCreationForm.hpp"
 #include "RobotomyRequestForm.hpp"
 #include "PresidentialPardonForm.hpp"
+#include "Intern.hpp"
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -156,6 +157,43 @@ void testInvalidExecution() {
     }
 }
 
+void testIntern() {
+    printTitle("INTERN TESTS");
+    
+    try {
+        Intern intern;
+        Bureaucrat boss("Boss", 1);
+        
+        std::cout << CYAN << "\nTesting valid form creation:" << RESET << std::endl;
+        AForm* form1 = intern.makeForm("robotomy request", "Bender");
+        AForm* form2 = intern.makeForm("presidential pardon", "Criminal");
+        AForm* form3 = intern.makeForm("shrubbery creation", "Garden");
+        
+        if (form1 && form2 && form3) {
+            boss.signAForm(*form1);
+            boss.executeForm(*form1);
+            
+            boss.signAForm(*form2);
+            boss.executeForm(*form2);
+            
+            boss.signAForm(*form3);
+            boss.executeForm(*form3);
+            
+            delete form1;
+            delete form2;
+            delete form3;
+        }
+        
+        std::cout << CYAN << "\nTesting invalid form creation:" << RESET << std::endl;
+        AForm* invalidForm = intern.makeForm("invalid form", "Target");
+        if (invalidForm)
+            delete invalidForm;
+    }
+    catch (std::exception& e) {
+        std::cout << RED << "Exception: " << e.what() << RESET << std::endl;
+    }
+}
+
 int main()
 {
     testFormCreation();
@@ -163,6 +201,7 @@ int main()
     testRobotomy();
     testPresidentialPardon();
     testInvalidExecution();
+    testIntern();
 
     return 0;
 }

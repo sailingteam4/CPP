@@ -30,11 +30,11 @@ int main()
 
 	if (&data == deserialized)
 	{
-		std::cout << "✓ SUCCESS: Original pointer and deserialized pointer are equal!" << std::endl;
+		std::cout << "SUCCESS: Original pointer and deserialized pointer are equal" << std::endl;
 	}
 	else
 	{
-		std::cout << "✗ FAILURE: Pointers are not equal!" << std::endl;
+		std::cout << "FAILURE: Pointers are not equal" << std::endl;
 	}
 
 	return 0;

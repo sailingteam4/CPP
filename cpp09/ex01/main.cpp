@@ -7,7 +7,7 @@ int main(int ac, char **av)
     rpn obj;
     if (ac != 2)
     {
-        std::cerr << "Error\n";
+        std::cerr << "Error: args\n";
         exit(0);
     }
     else

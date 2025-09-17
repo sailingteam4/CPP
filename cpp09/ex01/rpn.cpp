@@ -28,7 +28,7 @@ int rpn::CalculationResult(int n1, int n2, char o)
 		case '/':
 		{
 			if (n2 == 0)
-				throw std::invalid_argument("number / 0\n");
+				throw std::invalid_argument("Error: number / 0\n");
 			return (n2 / n1);
 		}
 	}
@@ -58,9 +58,9 @@ void    rpn::ReadInput(std::string input)
 		else if (isspace(input[i]))
 			continue;
 		else
-			throw std::invalid_argument("Invalid Input\n");
+			throw std::invalid_argument("Error: Invalid Input\n");
 	}
 	if ((op + 1) != num)
-		throw std::invalid_argument("Number of operators less or greater than numbers\n");
+		throw std::invalid_argument("Error: Number of operators less or greater than numbers\n");
 	std::cout << _numbers.top() << "\n";
 }

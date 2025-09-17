@@ -4,15 +4,15 @@ BitcoinExchange::BitcoinExchange()
 {
 }
 
-BitcoinExchange::BitcoinExchange(const BitcoinExchange& other) : _exchangeRates(other._exchangeRates)
+BitcoinExchange::BitcoinExchange(const BitcoinExchange& o) : _exchangeRates(o._exchangeRates)
 {
 }
 
-BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& other)
+BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& o)
 {
-    if (this != &other)
+    if (this != &o)
     {
-        _exchangeRates = other._exchangeRates;
+        _exchangeRates = o._exchangeRates;
     }
     return *this;
 }

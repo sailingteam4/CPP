@@ -4,7 +4,7 @@
 
 int main(int ac, char **av)
 {
-    rpn obj;
+    rpn rpn_obj;
     if (ac != 2)
     {
         std::cerr << "Error: args\n";
@@ -14,7 +14,7 @@ int main(int ac, char **av)
     {
         try
         {
-            obj.ReadInput(av[1]);
+            rpn_obj.ReadInput(av[1]);
         }
         catch(const std::exception& e)
         {

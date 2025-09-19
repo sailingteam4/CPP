@@ -1,68 +1,95 @@
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <deque>
+#include <string>
+#include <cstdlib>
+#include <climits>
+#include <cctype>
 #include "PmergeMe.hpp"
 
-void	process_with_list(char **argv)
+static bool parseArgs(int argc, char** argv, std::vector<unsigned int>& vec, std::deque<unsigned int>& deq)
 {
-	std::cout << "using std::list" << std::endl;
-	clock_t start = clock();
-	std::list< std::pair<int, int> > listy;
-	std::list<int> main_chain;
-	int additional_value = -1;
-	
-	try
-	{
-		print_before(argv);
-		create_pairs(&listy, argv, &additional_value);
-		sort_pairs(&listy);
-		mergeSort(listy.begin(), listy.end(), 0);
-
-		init_main_chain(&main_chain, listy);
-
-		insert_into_main_chain(listy, &main_chain, additional_value);
-		print_after(main_chain);
-		
-		clock_t end = clock();
-		std::cout << "Time to process a range of " << main_chain.size() << " elements with std::list: " << static_cast<double>(end - start) / 1000 << " millisec" << std::endl << std::endl;
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+    vec.clear();
+    deq.clear();
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string s(argv[i]);
+        if (s.empty())
+            return false;
+        for (size_t k = 0; k < s.size(); ++k)
+        {
+            if (!std::isdigit(static_cast<unsigned char>(s[k])))
+            {
+                return false;
+            }
+        }
+        unsigned long long v = 0ULL;
+        std::istringstream iss(s);
+        iss >> v;
+        if (!iss || !iss.eof())
+            return false;
+        if (v > UINT_MAX)
+            return false;
+        vec.push_back(static_cast<unsigned int>(v));
+        deq.push_back(static_cast<unsigned int>(v));
+    }
+    return true;
 }
 
-void	process_with_deque(char **argv)
+static void printSeq(const std::vector<unsigned int>& v)
 {
-	std::cout << "using std::deque" << std::endl;
-	clock_t start = clock();
-	std::deque< std::pair<int, int> > dequey;
-	std::deque<int> main_chain;
-	int additional_value = -1;
-
-	try
-	{
-		print_before(argv);
-		create_pairs2(&dequey, argv, &additional_value);
-		sort_pairs2(&dequey);
-		mergeSort2(dequey.begin(), dequey.end(), 0);
-		init_main_chain2(&main_chain, dequey);
-		insert_into_main_chain2(dequey, &main_chain, additional_value);
-		print_after2(main_chain);
-		
-		clock_t end = clock();
-		std::cout << "Time to process a range of " << main_chain.size() << " elements with std::deque: " << static_cast<double>(end - start) / 1000 << " millisec" << std::endl;
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+    for (size_t i = 0; i < v.size(); ++i)
+    {
+        if (i)
+            std::cout << ' ';
+        std::cout << v[i];
+    }
 }
 
-int	main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	if (argc < 2)
-		return (std::cerr << "Not enough arguments provided\n", 1);
-	
-	process_with_list(argv);
-	process_with_deque(argv);
-	
-	return (0);
+    try
+    {
+        if (argc < 2)
+        {
+            std::cerr << "Error" << std::endl;
+            return 1;
+        }
+        std::vector<unsigned int> inputVec;
+        std::deque<unsigned int> inputDeq;
+        if (!parseArgs(argc, argv, inputVec, inputDeq))
+        {
+            std::cerr << "Error" << std::endl;
+            return 1;
+        }
+        std::cout << "Before: ";
+        printSeq(inputVec);
+        std::cout << std::endl;
+
+        std::vector<unsigned int> sortedVec;
+        std::deque<unsigned int> sortedDeq;
+        double timeVecUs = 0.0, timeDeqUs = 0.0;
+
+        PmergeMe::sortVector(inputVec, sortedVec, timeVecUs);
+        //PmergeMe::sortDeque(inputDeq, sortedDeq, timeDeqUs);
+
+        std::cout << "After:  ";
+        printSeq(sortedVec);
+        std::cout << std::endl;
+
+        std::cout.setf(std::ios::fixed);
+        std::cout.precision(6);
+        std::cout << "Time to process a range of " << inputVec.size()
+                  << " elements with std::vector : " << timeVecUs << " us" << std::endl;
+        //std::cout << "Time to process a range of " << inputDeq.size()
+        //          << " elements with std::deque  : " << timeDeqUs << " us" << std::endl;
+
+        return (0);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error" << std::endl;
+        return 1;
+    }
 }

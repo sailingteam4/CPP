@@ -1,294 +1,414 @@
-#include"PmergeMe.hpp"
+#include "PmergeMe.hpp"
+#include <sstream>
+#include <iterator>
 
-template <typename Container>
-std::string getContainerName();
+unsigned long long g_comparison_count = 0;
 
-template <>
-std::string getContainerName<std::vector<int> >() {
-    return "vector<int>";
-}
-
-template <>
-std::string getContainerName<std::deque<int> >() {
-    return "deque<int>";
-}
-
-template<typename Container>
-PmergeMe<Container>::PmergeMe() : _container(), _value(-1), _time(0), _comparisons(0) {}
-
-
-template <typename Container>
-PmergeMe<Container>::PmergeMe(char **data) : _container() {
-
-    _time = 0;
-    _value = -1;
-    _comparisons = 0;
-
-    for(size_t i = 0; data[i]; i++) {
-        if (is_number(data[i]) != 0) {
-            std::cerr << "Error" << std::endl;
-            exit(1);
-        }
-        _container.push_back(ft_stoa(data[i]));
-    }
-}
-
-template<typename Container>
-PmergeMe<Container>::PmergeMe(const PmergeMe &other) {
-    _container = other._container;
-    _value = other._value;
-    _time = other._time;
-    _comparisons = other._comparisons;
-}
-
-template<typename Container>
-PmergeMe<Container> &PmergeMe<Container>::operator=(const PmergeMe &other) {
-    if (this != &other) {
-        _container = other._container;
-        _value = other._value;
-        _time = other._time;
-        _comparisons = other._comparisons;
-    }
-    return *this;
-}
-
-template <typename Container>
-PmergeMe<Container>::~PmergeMe() {}
-
-
-template <typename Container>
-void PmergeMe<Container>::sort_numbers() {
-
-    std::clock_t start = std::clock();
-    _comparisons = 0; // reset counter for this sorting run
-    if (_container.size() <= 1) {
-        _time = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
-        return;
-    }
-
-    // Step 1: create pairs and store larger element first
-    vector_pair pairs = generate_pairs(_container);
-
-    // Step 2: sort the pairs by their first (larger) element using merge-sort based on counted comparisons
-    sort_pairs(pairs); // counts comparisons internally via lessThan
-
-    // Step 3: build the main chain (larger elements) and pending (smaller elements)
-    Container mainChain;
-    Container pending;
-    for (size_type i = 0; i < pairs.size(); ++i) {
-        mainChain.push_back(pairs[i].first);   // larger
-        pending.push_back(pairs[i].second);    // smaller
-    }
-
-    // Insert first pending element in front (guaranteed smaller than its pair first)
-    _container.clear();
-    _container.push_back(pending[0]);
-    for (size_type i = 0; i < mainChain.size(); ++i) {
-        _container.push_back(mainChain[i]);
-    }
-
-    // Generate Jacobsthal order for remaining pending elements (excluding the first already inserted)
-    int_vector indexes = generate_indexes(pending.size());
-
-    for (size_t k = 0; k < indexes.size(); ++k) {
-        size_t pendIdx = indexes[k] - 1; // our generate_indexes starts from 1
-        if (pendIdx == 0 || pendIdx >= pending.size()) continue;
-
-        // Boundaries: search only in range [0, position_of_pair_first)
-        // Find current position of pair.first in the container
-        T pairFirst = pairs[pendIdx].first;
-        int upperBoundExclusive = find_position(pairFirst); // position of the larger element
-        if (upperBoundExclusive < 0) upperBoundExclusive = _container.size();
-
-        int insertPos = binary_search_range(0, upperBoundExclusive, pending[pendIdx]);
-        _container.insert(_container.begin() + insertPos, pending[pendIdx]);
-    }
-
-    // If odd size original list, insert leftover value
-    if (_value != -1) {
-        int pos = binary_search_range(0, _container.size(), _value);
-        _container.insert(_container.begin() + pos, _value);
-    }
-
-    _time = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
-}
-
-template <typename Container>
-typename PmergeMe<Container>::vector_pair PmergeMe<Container>::generate_pairs(Container &data) {
-    vector_pair pairs;
-
-    // If the size of the data is odd, we need to store the last element
-    if (data.size() % 2 != 0) {
-        _value = data.back();
-        data.pop_back();
-    }
-
-size_type i = 0;
-    while(i < data.size())
-    {
-        if (lessThan(data[i], data[i + 1])) {
-            std::swap(data[i], data[i + 1]);
-        }
-
-        pairs.push_back(std::make_pair(data[i], data[i + 1]));
-        i += 2;
-    }
-    return pairs;
-}
-
-template <typename Container>
-void PmergeMe<Container>::sort_pairs(vector_pair &pairs) {
-    if (pairs.size() <= 1) {
-        return; // Base case: Nothing to sort
-    }
-
-    // Divide the vector into two halves
-    size_type middle = pairs.size() / 2;
-    vector_pair left(pairs.begin(), pairs.begin() + middle);
-    vector_pair right(pairs.begin() + middle, pairs.end());
-
-    // Recursively sort the two halves
-    sort_pairs(left);
-    sort_pairs(right);
-
-   // Merge the sorted halves
-    Merge_Sorted_halves(left, right, pairs);
-}
-
-template <typename Container>
-void   PmergeMe<Container>::Merge_Sorted_halves( vector_pair leftHalf, vector_pair rightHalf, vector_pair &pairs)
+std::vector<unsigned int>::iterator lower_bound_with_count(std::vector<unsigned int>::iterator first, 
+                                                          std::vector<unsigned int>::iterator last, 
+                                                          const unsigned int& val)
 {
-    size_type leftIdx = 0;
-    size_type rightIdx = 0;
-    size_type idx = 0;
-
-    while (leftIdx < leftHalf.size() && rightIdx < rightHalf.size()) {
-        // compare the first elements of the pair (these are the larger elements of original pairs)
-        if (lessThan(leftHalf[leftIdx].first, rightHalf[rightIdx].first)) {
-            pairs[idx++] = leftHalf[leftIdx++];
+    std::vector<unsigned int>::iterator it;
+    std::iterator_traits<std::vector<unsigned int>::iterator>::difference_type count, step;
+    count = std::distance(first, last);
+    
+    while (count > 0) {
+        it = first;
+        step = count / 2;
+        std::advance(it, step);
+        g_comparison_count++; // Count each comparison in binary search
+        if (*it < val) {
+            first = ++it;
+            count -= step + 1;
         } else {
-            pairs[idx++] = rightHalf[rightIdx++];
+            count = step;
         }
     }
-
-    while (leftIdx < leftHalf.size()) {
-        pairs[idx++] = leftHalf[leftIdx++];
-    }
-
-    while (rightIdx < rightHalf.size()) {
-        pairs[idx++] = rightHalf[rightIdx++];
-    }
+    return first;
 }
 
-template <typename Container>
-int PmergeMe<Container>::binary_search_range(int left, int rightExclusive, int target) {
-    // classic lower_bound in [left, rightExclusive)
-    while (left < rightExclusive) {
-        int mid = left + (rightExclusive - left) / 2;
-        if (lessThan(_container[mid], target)) {
-            left = mid + 1;
-        } else {
-            // no equality branch to avoid second comparison
-            rightExclusive = mid;
-        }
-    }
-    return left;
-}
-
-template <typename Container>
-int_vector PmergeMe<Container>::generate_indexes(size_t size) {
-    int_vector indexes;
-    int jacobsthalSequence[size + 1];
-
-    jacobsthalSequence[0] = 0;
-    jacobsthalSequence[1] = 1;
-    int lastJacobsthalNumber = 2;
-
-    for (size_t i = 2; indexes.size() < size; i++)
+bool __isNumber(std::string _arg)
+{
+    size_t len = _arg.length();
+    for (size_t i = 0; i < len; i++)
     {
-        // Generate the next Jacobsthal number
-        jacobsthalSequence[i] = jacobsthalSequence[i - 1] + 2 * jacobsthalSequence[i - 2];
-
-        if(i != 2)
-        {
-            indexes.push_back(jacobsthalSequence[i]);
-
-        }
-
-        // Push back the indexes between the last Jacobsthal number and the current one
-        for (int j = jacobsthalSequence[i] - 1; j > lastJacobsthalNumber; j--)
-            indexes.push_back(j);
-
-        // Update the last Jacobsthal number
-        lastJacobsthalNumber = jacobsthalSequence[i];
+        if (!std::isdigit(_arg[i]))
+            return false;
     }
-    return (indexes);
+    return true;
 }
 
-template<typename Container>
-void PmergeMe<Container>::print() const {
-    for (size_t i = 0; i < _container.size(); i++) {
-        std::cout << _container[i] << " ";
+std::vector<unsigned int> __fordJohnson_sort_vector(char **av)
+{
+    std::pair<std::vector<unsigned int>, std::vector<unsigned int> > mainChain_pend;
+    std::vector<std::pair<unsigned int, unsigned int> > pairVec;
+    std::vector<unsigned int> vec;
+    unsigned int struggler;
+    bool check  = false;
+    if (__getContainers(vec, av))
+    {
+        if (vec.size() % 2 != 0)
+        {
+            check = true;
+            struggler = vec.back();
+            vec.pop_back();
+        }
+        pairVec = __getPairVec(vec);
+        __recursivelysort_Vector(pairVec);
+        mainChain_pend = __get_mainChain_pend_vector(pairVec);
+        vec = __sort_vector(jacobsthalNumbers(mainChain_pend.second.size()), mainChain_pend, vec);
+        if (check)
+            vec.insert(lower_bound_with_count(vec.begin(), vec.end(), struggler), struggler);
+        return vec;
+    }
+    else 
+        return std::vector<unsigned int>();
+}
+
+std::vector<unsigned int> __sort_vector(std::vector<unsigned int> jacobsthalnumber, \
+std::pair<std::vector<unsigned int>, std::vector<unsigned int> > mainChain_pend,\
+ std::vector<unsigned int>)
+{
+    size_t pendSize = mainChain_pend.second.size();
+    size_t j_size = jacobsthalnumber.size();
+    size_t top = 3, i = 0, j = 0;
+    
+    while (i < j_size || j_size == 0)
+    {
+        if (top < pendSize)
+        {
+            mainChain_pend.first.insert(lower_bound_with_count(mainChain_pend.first.begin(), \
+            mainChain_pend.first.end(), mainChain_pend.second[top]), mainChain_pend.second[top]);
+        }
+        while (j < top && j < pendSize)
+        {
+            mainChain_pend.first.insert(lower_bound_with_count(mainChain_pend.first.begin(), \
+            mainChain_pend.first.end(), mainChain_pend.second[j]), mainChain_pend.second[j]);
+            j++;
+        }
+        if (j_size == 0)
+            break;
+        j++;
+        i++;
+        if (i < j_size)     
+            top = jacobsthalnumber[i];
+    }
+    return mainChain_pend.first;
+}
+std::pair<std::vector<unsigned int>, std::vector<unsigned int> > __get_mainChain_pend_vector(\
+std::vector<std::pair<unsigned int, unsigned int> > pairVec)
+{
+    size_t vecLength = pairVec.size();
+    std::pair<std::vector<unsigned int> , std::vector<unsigned int> > __result;
+    
+    if (!pairVec.empty())
+    {
+        __result.first.push_back(pairVec[0].second);
+        __result.first.push_back(pairVec[0].first);
+    }
+
+    for (size_t i = 1; i < vecLength; i++)
+    {
+        __result.first.push_back(pairVec[i].first);
+        __result.second.push_back(pairVec[i].second);
+    }
+    return __result;
+}
+void __recursivelysort_Vector(std::vector<std::pair<unsigned int, unsigned int> > &pairVec) 
+{
+    size_t len = pairVec.size();
+    if (len <= 1)
+        return;
+
+    size_t middle = len / 2;
+    std::vector<std::pair<unsigned int, unsigned int> > leftArray(middle);
+    std::vector<std::pair<unsigned int, unsigned int> > rightArray(len - middle);
+    
+    size_t j = 0;
+    for (size_t i = 0; i < len; i++)
+    {
+        if (i < middle)
+            leftArray[i] = pairVec[i];
+        else
+        {
+            rightArray[j] = pairVec[i];
+            j++;
+        }
+    }
+    __recursivelysort_Vector(leftArray);
+   __recursivelysort_Vector(rightArray);
+
+    __pairVector_sort(leftArray, rightArray, pairVec);
+    
+}
+
+void __pairVector_sort(std::vector<std::pair<unsigned int, unsigned int> > leftArray, \
+std::vector<std::pair<unsigned int, unsigned int> > rightArray, \
+std::vector<std::pair<unsigned int, unsigned int> > &baseArray)
+{
+    size_t l_len = baseArray.size() / 2;
+    size_t r_len = baseArray.size() - l_len;
+    size_t i = 0, l = 0, r = 0;
+
+    while(l < l_len && r < r_len)
+    {
+        g_comparison_count++; // Count comparison during merge
+        if (leftArray[l].first < rightArray[r].first)
+            baseArray[i++] = leftArray[l++];
+        else
+            baseArray[i++] = rightArray[r++];
+    }
+    for(; l < l_len; l++)
+        baseArray[i++] = leftArray[l];
+
+    for(; r < r_len ; r++)
+        baseArray[i++] = rightArray[r];
+}
+
+std::vector<std::pair<unsigned int, unsigned int> > __getPairVec(std::vector<unsigned int> _vec)
+{
+    size_t j = 0;
+    size_t len = _vec.size();
+    std::vector<std::pair<unsigned int, unsigned int> > _result(len / 2);
+    
+    for (size_t i = 0; i < len; i++)
+    {
+        g_comparison_count++; // Count comparison for pair formation
+        if (_vec[i] < _vec[i + 1])
+        {
+            _result[j].second = _vec[i];
+            _result[j].first = _vec[++i];
+        }
+        else
+        {
+            _result[j].first = _vec[i];
+            _result[j].second = _vec[++i];
+        }
+        j++;
+    }
+    return _result;
+}
+void printSortedVec(std::vector<unsigned int> _vec)
+{
+    std::cout << "After:  " ;
+    std::vector<unsigned int>::iterator itt = _vec.begin();
+    for (; itt != _vec.end(); itt++)
+    {
+        std::cout << *itt << " " ;
     }
     std::cout << std::endl;
 }
 
-template<typename Container>
-void PmergeMe<Container>::benchmark() const {
-    std::cout
-            <<	"Time to process a range of " << _container.size()
-            << " elements with std::" << getContainerName< Container >()
-            << " : " << std::fixed << std::setprecision(5) << _time << " us"
-            << std::endl;
-}
-
-template<typename Container>
-bool PmergeMe<Container>::lessThan(const T &a, const T &b) {
-    ++_comparisons;
-    return a < b;
-}
-
-template<typename Container>
-int PmergeMe<Container>::find_position(const T &value) const {
-    for (size_t i = 0; i < _container.size(); ++i) {
-        if (_container[i] == value) return static_cast<int>(i);
-    }
-    return -1;
-}
-
-template<typename Container>
-int PmergeMe<Container>::ft_stoa(const char *str) {
-    std::istringstream  ss(str);
-    int                 number;
-
-    ss >> number; // Convert the string
-
-    return (number);
-}
-
-template<typename Container>
-int PmergeMe<Container>::is_number(const std::string& s)
+std::list<std::pair<unsigned int, unsigned int> > __getPairList(std::list<unsigned int> _lst)
 {
-    if (s.empty() || s[0] == '-') {
-        return (1);
+    size_t len = _lst.size();
+    std::list<std::pair<unsigned int, unsigned int> > _result(len / 2);
+    std::list<unsigned int>::iterator it = _lst.begin();
+    std::list<std::pair<unsigned int , unsigned int> >::iterator r_it = _result.begin();
+
+    for (; it != _lst.end() ; it++)
+    {
+        if (*it < *(++it))
+        {
+            it--;
+            r_it->second = *it;
+            r_it->first = *(++it);
+        }
+        else
+        {
+            it--;
+            r_it->first = *it;
+            r_it->second = *(++it);
+        }
+        r_it++;
     }
+    return _result;
+}
 
-    size_t i = 0;
+void __pairList_sort(std::list<std::pair<unsigned int, unsigned int> > leftList, \
+std::list<std::pair<unsigned int, unsigned int> > rightList, \
+std::list<std::pair<unsigned int, unsigned int> > &baseList)
+{
+    std::list<std::pair<unsigned int, unsigned int> >::iterator base_it = baseList.begin();
+    std::list<std::pair<unsigned int, unsigned int> >::iterator l_it = leftList.begin();
+    std::list<std::pair<unsigned int, unsigned int> >::iterator r_it = rightList.begin();
 
-    if (s[0] == '+' && s.length() == 1) {
-        return (1);
-    } else if (s[0] == '+') {
-        i++;
-    }
-
-    for (; i < s.length(); i++) {
-        if (!std::isdigit(s[i])) {
-            return (1);
+    while(l_it != leftList.end() && r_it != rightList.end())
+    {
+        if (l_it->first < r_it->first)
+        {
+            *base_it = *l_it;
+            base_it++;
+            l_it++;
+        }
+        else
+        {
+            *base_it = *r_it;
+            base_it++;
+            r_it++;
         }
     }
+    for(; l_it != leftList.end(); l_it++)
+    {
+        *base_it = *l_it;
+        base_it++;
+    }
 
-    return (0);
+    for(; r_it != rightList.end() ; r_it++)
+    {
+        *base_it = *r_it;
+        base_it++;
+    }
 }
 
-template class PmergeMe< std::vector<int> >;
-template class PmergeMe< std::deque<int> >;
+void  __recursivelysort_List(std::list<std::pair<unsigned int, unsigned int> > &pairList) 
+{
+    size_t len = pairList.size();
+    if (len <= 1)
+        return;
+
+    std::list<std::pair<unsigned int, unsigned int> >::iterator it = pairList.begin();
+    std::list<std::pair<unsigned int, unsigned int> > leftList;
+    std::list<std::pair<unsigned int, unsigned int> > rightList;
+    size_t middle = len / 2;
+    
+    size_t i = 0;
+
+    for (; it != pairList.end(); it++)
+    {
+        if (i < middle)
+            leftList.push_back(*it);
+        else
+            rightList.push_back(*it);
+        i++;
+    }
+     __recursivelysort_List(leftList);
+    __recursivelysort_List(rightList);
+
+    __pairList_sort(leftList, rightList, pairList);
+    
+}
+
+std::pair<std::list<unsigned int>, std::list<unsigned int> > __get_mainChain_pend(\
+std::list<std::pair<unsigned int, unsigned int> > pairList)
+{
+    std::pair<std::list<unsigned int> , std::list<unsigned int> > __result;
+    std::list<std::pair<unsigned int, unsigned int> >::iterator pairlist_it = pairList.begin();
+
+    if (!pairList.empty())
+    {
+        __result.first.push_back(pairlist_it->second);
+        __result.first.push_back(pairlist_it->first);
+        pairlist_it++;
+    }
+
+    for (; pairlist_it != pairList.end(); pairlist_it++)
+    {
+        __result.first.push_back(pairlist_it->first);
+        __result.second.push_back(pairlist_it->second);
+    }
+    return __result;
+}
+
+// Function to calculate the Jacobsthal numbers
+std::vector<unsigned int> jacobsthalNumbers(unsigned int n)
+{
+    std::vector<unsigned int> jacobsthalSeq;
+    jacobsthalSeq.push_back(0);
+    jacobsthalSeq.push_back(1);
+    unsigned int next_num = 0;
+    while (jacobsthalSeq.back() <= n) {
+        next_num = jacobsthalSeq[jacobsthalSeq.size() - 1] + 2 * jacobsthalSeq[jacobsthalSeq.size() - 2];
+        if (next_num < n) {
+            jacobsthalSeq.push_back(next_num);
+        } else {
+            break;
+        }
+    }
+    jacobsthalSeq.push_back(next_num);
+    jacobsthalSeq.erase(jacobsthalSeq.begin(), jacobsthalSeq.begin() + 3);
+    return jacobsthalSeq;
+}
+
+unsigned int __get_value_at(std::list<unsigned int> lst, unsigned int _pos)
+{
+    std::list<unsigned int>::iterator it = lst.begin();
+    unsigned int i = 0;
+    for (;i < _pos; it++)
+    {
+        i++;
+    }
+    return *it;
+}
+
+void printSortedList(std::list<unsigned int> _list)
+{
+    std::list<unsigned int>::iterator itt = _list.begin();
+    std::cout << "After :  " ;
+    for (; itt != _list.end(); itt++)
+    {
+        std::cout << *itt << " " ;
+    }
+    std::cout << std::endl;
+}
+
+std::list<unsigned int> __sort_list(std::vector<unsigned int> jacobsthalnumber, \
+std::pair<std::list<unsigned int>, std::list<unsigned int> > mainChain_pend,\
+std::list<unsigned int>)
+{
+    size_t pendSize = mainChain_pend.second.size();
+    size_t j_size = jacobsthalnumber.size();
+    
+    std::list<unsigned int>::iterator pend_it = mainChain_pend.second.begin();
+    size_t top = 3, i = 0, j = 0;
+    
+    while (i < j_size || j_size == 0)
+    {
+        if (top < pendSize)
+        {
+            mainChain_pend.first.insert(std::lower_bound(mainChain_pend.first.begin(), \
+            mainChain_pend.first.end(), __get_value_at(mainChain_pend.second, top)), __get_value_at(mainChain_pend.second, top));
+        }
+        while (j < top && j < pendSize)
+        {
+            mainChain_pend.first.insert(std::lower_bound(mainChain_pend.first.begin(), \
+            mainChain_pend.first.end(), *pend_it), *pend_it);
+            j++;
+            pend_it++;
+        }
+        if (j_size == 0)
+            break;
+        pend_it++;
+        j++;
+        i++;   
+        if (i < j_size)    
+            top = jacobsthalnumber[i];
+    }
+    return mainChain_pend.first;
+}
+
+std::list<unsigned int> __fordJohnson_sort_list(char **av)
+{
+    std::pair<std::list<unsigned int>, std::list<unsigned int> > mainChain_pend;
+    std::list<std::pair<unsigned int, unsigned int> > pairlst;
+    std::list<unsigned int> lst;
+    unsigned int struggler;
+    bool check  = false;
+    if (__getContainers(lst, av))
+    {
+        if (lst.size() % 2 != 0)
+        {
+            check = true;
+            struggler = lst.back();
+            lst.pop_back();
+        }
+        pairlst = __getPairList(lst);
+        __recursivelysort_List(pairlst);
+        mainChain_pend = __get_mainChain_pend(pairlst);
+        lst = __sort_list(jacobsthalNumbers(mainChain_pend.second.size()), mainChain_pend, lst);
+        if (check)
+            lst.insert(std::lower_bound(lst.begin(), lst.end(), struggler), struggler);
+        return lst;
+    }
+    return std::list<unsigned int>();
+}

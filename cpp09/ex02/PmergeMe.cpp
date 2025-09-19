@@ -1,362 +1,294 @@
-#include "PmergeMe.hpp"
+#include"PmergeMe.hpp"
 
-#include <algorithm>
-#include <ctime>
-#include <climits>
-#include <cstddef>
-#include <iostream>
+template <typename Container>
+std::string getContainerName();
 
-static std::vector<std::size_t> buildJacobsthalOrder(std::size_t m)
-{
-    // J(0)=0, J(1)=1, J(n)=J(n-1)+2*J(n-2)
-    std::vector<std::size_t> j; j.reserve(32);
-    j.push_back(0); // J0
-    j.push_back(1); // J1
-    while (true)
-    {
-        std::size_t n = j.size();
-        std::size_t next = j[n-1] + 2 * j[n-2];
-        if (next > m)
-            break;
-        j.push_back(next);
-    }
-    std::vector<std::size_t> order;
-    std::size_t prev = 1;
-    for (std::size_t idx = 2; idx < j.size(); ++idx)
-    {
-        std::size_t cur = j[idx];
-        if (cur > m)
-            cur = m;
-        for (std::size_t t = cur; t-- > prev; )
-        {
-            order.push_back(t);
+template <>
+std::string getContainerName<std::vector<int> >() {
+    return "vector<int>";
+}
+
+template <>
+std::string getContainerName<std::deque<int> >() {
+    return "deque<int>";
+}
+
+template<typename Container>
+PmergeMe<Container>::PmergeMe() : _container(), _value(-1), _time(0), _comparisons(0) {}
+
+
+template <typename Container>
+PmergeMe<Container>::PmergeMe(char **data) : _container() {
+
+    _time = 0;
+    _value = -1;
+    _comparisons = 0;
+
+    for(size_t i = 0; data[i]; i++) {
+        if (is_number(data[i]) != 0) {
+            std::cerr << "Error" << std::endl;
+            exit(1);
         }
-        prev = j[idx];
-    }
-    for (std::size_t k = prev; k < m; ++k)
-        order.push_back(k);
-    return order;
-}
-
-static bool pairFirstLess(const std::pair<unsigned int, unsigned int>& x, const std::pair<unsigned int, unsigned int>& y)
-{
-    return x.first < y.first;
-}
-
-static void printPairsMinMax(const char* tag, const std::vector< std::pair<unsigned int,unsigned int> >& pairs, bool hasStraggler, unsigned int straggler)
-{
-    std::cout << tag;
-    for (std::size_t i = 0; i < pairs.size(); ++i)
-    {
-        std::cout << ' ' << pairs[i].second << ' ' << pairs[i].first;
-    }
-    if (hasStraggler)
-        std::cout << ' ' << straggler;
-    std::cout << std::endl;
-}
-
-// -------------------- Vector --------------------
-
-static void pairAndSortVector(const std::vector<unsigned int>& in, std::vector< std::pair<unsigned int,unsigned int> >& pairs, bool& hasStraggler, unsigned int& straggler)
-{
-    pairs.clear();
-    hasStraggler = (in.size() % 2 != 0);
-    std::size_t limit = in.size() - (hasStraggler ? 1 : 0);
-    pairs.reserve(limit/2);
-    for (std::size_t i = 0; i < limit; i += 2)
-    {
-        unsigned int a = in[i];
-        unsigned int b = in[i+1];
-        if (a < b)
-            std::swap(a, b);
-        pairs.push_back(std::make_pair(a, b));
-    }
-    if (hasStraggler)
-        straggler = in.back();
-}
-
-static void buildInitialChainVector(const std::vector< std::pair<unsigned int,unsigned int> >& pairs, std::vector<unsigned int>& chain, std::vector<unsigned int>& pend)
-{
-    chain.clear();
-    pend.clear();
-    if (pairs.empty())
-        return;
-    // S (main) gets the first pair's larger; P (pend) gets the smaller
-    chain.reserve(pairs.size());
-    pend.reserve(pairs.size());
-    chain.push_back(pairs[0].first);
-    pend.push_back(pairs[0].second);
-    for (std::size_t i = 1; i < pairs.size(); ++i)
-    {
-        chain.push_back(pairs[i].first);
-        pend.push_back(pairs[i].second);
+        _container.push_back(ft_stoa(data[i]));
     }
 }
 
-void PmergeMe::binaryInsertVector(std::vector<unsigned int>& chain, unsigned int value, std::size_t upperBoundExclusive)
-{
-    std::size_t left = 0;
-    std::size_t right = std::min(upperBoundExclusive, chain.size());
-    while (left < right)
-    {
-        std::size_t mid = left + (right - left) / 2;
-        if (value <= chain[mid])
-            right = mid; else left = mid + 1;
-    }
-    chain.insert(chain.begin() + left, value);
+template<typename Container>
+PmergeMe<Container>::PmergeMe(const PmergeMe &other) {
+    _container = other._container;
+    _value = other._value;
+    _time = other._time;
+    _comparisons = other._comparisons;
 }
 
-std::vector<std::size_t> PmergeMe::buildJacobsthalOrderVector(std::size_t m)
-{
-    return buildJacobsthalOrder(m);
+template<typename Container>
+PmergeMe<Container> &PmergeMe<Container>::operator=(const PmergeMe &other) {
+    if (this != &other) {
+        _container = other._container;
+        _value = other._value;
+        _time = other._time;
+        _comparisons = other._comparisons;
+    }
+    return *this;
 }
 
-void PmergeMe::fordJohnsonVector(const std::vector<unsigned int>& input, std::vector<unsigned int>& output)
-{
-    if (input.size() <= 1)
-    {
-        output = input; return;
-    }
+template <typename Container>
+PmergeMe<Container>::~PmergeMe() {}
 
-    // Step 1: pair and sort pairs by their max elements
-    std::vector< std::pair<unsigned int,unsigned int> > pairs;
-    bool hasStraggler = false;
-    unsigned int straggler = 0;
-    pairAndSortVector(input, pairs, hasStraggler, straggler);
 
-    std::vector< std::pair<unsigned int,unsigned int> > guidePairs = pairs;
+template <typename Container>
+void PmergeMe<Container>::sort_numbers() {
 
-    printPairsMinMax("[vector] step 1:", guidePairs, hasStraggler, straggler);
-
-    // Step 2: for each adjacent pair-of-pairs, sort by max (first) ascending
-    for (std::size_t i = 0; i + 1 < guidePairs.size(); i += 2)
-    {
-        if (guidePairs[i].first > guidePairs[i+1].first)
-        {
-            std::pair<unsigned int,unsigned int> tmp = guidePairs[i];
-            guidePairs[i] = guidePairs[i+1];
-            guidePairs[i+1] = tmp;
-        }
-    }
-    printPairsMinMax("[vector] step 2:", guidePairs, hasStraggler, straggler);
-
-    // Step 3: for each full block of 4 pairs, swap halves (keep internal order)
-    std::vector< std::pair<unsigned int,unsigned int> > next = guidePairs;
-    for (std::size_t j = 0; j + 3 < guidePairs.size(); j += 4)
-    {
-        next[j + 0] = guidePairs[j + 2];
-        next[j + 1] = guidePairs[j + 3];
-        next[j + 2] = guidePairs[j + 0];
-        next[j + 3] = guidePairs[j + 1];
-    }
-    guidePairs.swap(next);
-
-    printPairsMinMax("[vector] step 3:", guidePairs, hasStraggler, straggler);
-
-    std::sort(pairs.begin(), pairs.end(), pairFirstLess);
-
-    printPairsMinMax("[vector] step 4:", guidePairs, hasStraggler, straggler);
-
-    // Step 2: build initial chain S from larger elements and pend from smaller
-    std::vector<unsigned int> chain;
-    std::vector<unsigned int> pend;
-    buildInitialChainVector(pairs, chain, pend);
-
-    std::cout << "[vector] initial main:";
-    for (std::size_t i = 0; i < chain.size(); ++i)
-        std::cout << ' ' << chain[i];
-    std::cout << std::endl;
-    std::cout << "[vector] initial pend:";
-    for (std::size_t i = 0; i < pend.size(); ++i)
-        std::cout << ' ' << pend[i];
-    std::cout << std::endl;
-    if (hasStraggler)
-        std::cout << "[vector] straggler: " << straggler << std::endl;
-
-    // Step 3: insert pend elements (the smaller elements) in Jacobsthal order.
-    if (!pend.empty())
-    {
-        std::vector<std::size_t> order = buildJacobsthalOrderVector(pend.size());
-        for (std::size_t k = 0; k < order.size(); ++k)
-        {
-            std::size_t pIndex = order[k];
-            if (pIndex >= pend.size())
-                continue;
-
-            unsigned int big = pairs[pIndex].first;
-
-            std::size_t posBig = 0;
-            while (posBig < chain.size() && chain[posBig] != big)
-                ++posBig;
-            if (posBig == chain.size())
-                posBig = chain.size();
-
-            binaryInsertVector(chain, pend[pIndex], posBig);
-        }
-    }
-
-    // Step 4: insert straggler if exists (full range)
-    if (hasStraggler)
-    {
-        binaryInsertVector(chain, straggler, chain.size());
-    }
-
-    output.swap(chain);
-}
-
-void PmergeMe::sortVector(const std::vector<unsigned int>& input, std::vector<unsigned int>& output, double& timeMicroseconds)
-{
     std::clock_t start = std::clock();
-    fordJohnsonVector(input, output);
-    std::clock_t end = std::clock();
-    timeMicroseconds = (double)(end - start) * 1e6 / (double)CLOCKS_PER_SEC;
-}
-
-// -------------------- Deque --------------------
-
-static void pairAndSortDeque(const std::deque<unsigned int>& in, std::vector< std::pair<unsigned int,unsigned int> >& pairs, bool& hasStraggler, unsigned int& straggler)
-{
-    pairs.clear();
-    hasStraggler = (in.size() % 2 != 0);
-    std::size_t limit = in.size() - (hasStraggler ? 1 : 0);
-    pairs.reserve(limit/2);
-    for (std::size_t i = 0; i < limit; i += 2)
-    {
-        unsigned int a = in[i];
-        unsigned int b = in[i+1];
-        if (a < b)
-            std::swap(a, b);
-        pairs.push_back(std::make_pair(a, b));
-    }
-    if (hasStraggler)
-        straggler = in.back();
-}
-
-static void buildInitialChainDeque(const std::vector< std::pair<unsigned int,unsigned int> >& pairs, std::deque<unsigned int>& chain, std::deque<unsigned int>& pend)
-{
-    chain.clear();
-    pend.clear();
-    if (pairs.empty())
+    _comparisons = 0; // reset counter for this sorting run
+    if (_container.size() <= 1) {
+        _time = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
         return;
-    chain.push_back(pairs[0].first);
-    pend.push_back(pairs[0].second);
-    for (std::size_t i = 1; i < pairs.size(); ++i)
-    {
-        chain.push_back(pairs[i].first);
-        pend.push_back(pairs[i].second);
-    }
-}
-
-void PmergeMe::binaryInsertDeque(std::deque<unsigned int>& chain, unsigned int value, std::size_t upperBoundExclusive)
-{
-    std::size_t left = 0;
-    std::size_t right = std::min(upperBoundExclusive, chain.size());
-    while (left < right)
-    {
-        std::size_t mid = left + (right - left) / 2;
-        if (value <= chain[mid])
-            right = mid; else left = mid + 1;
-    }
-    chain.insert(chain.begin() + left, value);
-}
-
-std::vector<std::size_t> PmergeMe::buildJacobsthalOrderDeque(std::size_t m)
-{
-    return buildJacobsthalOrder(m);
-}
-
-void PmergeMe::fordJohnsonDeque(const std::deque<unsigned int>& input, std::deque<unsigned int>& output)
-{
-    if (input.size() <= 1)
-    {
-        output = input; return;
     }
 
-    std::vector< std::pair<unsigned int,unsigned int> > pairs;
-    bool hasStraggler = false;
-    unsigned int straggler = 0;
-    pairAndSortDeque(input, pairs, hasStraggler, straggler);
+    // Step 1: create pairs and store larger element first
+    vector_pair pairs = generate_pairs(_container);
 
-    std::vector< std::pair<unsigned int,unsigned int> > guidePairs = pairs;
+    // Step 2: sort the pairs by their first (larger) element using merge-sort based on counted comparisons
+    sort_pairs(pairs); // counts comparisons internally via lessThan
 
-    printPairsMinMax("[deque ] step 1:", guidePairs, hasStraggler, straggler);
+    // Step 3: build the main chain (larger elements) and pending (smaller elements)
+    Container mainChain;
+    Container pending;
+    for (size_type i = 0; i < pairs.size(); ++i) {
+        mainChain.push_back(pairs[i].first);   // larger
+        pending.push_back(pairs[i].second);    // smaller
+    }
 
-    for (std::size_t i = 0; i + 1 < guidePairs.size(); i += 2)
+    // Insert first pending element in front (guaranteed smaller than its pair first)
+    _container.clear();
+    _container.push_back(pending[0]);
+    for (size_type i = 0; i < mainChain.size(); ++i) {
+        _container.push_back(mainChain[i]);
+    }
+
+    // Generate Jacobsthal order for remaining pending elements (excluding the first already inserted)
+    int_vector indexes = generate_indexes(pending.size());
+
+    for (size_t k = 0; k < indexes.size(); ++k) {
+        size_t pendIdx = indexes[k] - 1; // our generate_indexes starts from 1
+        if (pendIdx == 0 || pendIdx >= pending.size()) continue;
+
+        // Boundaries: search only in range [0, position_of_pair_first)
+        // Find current position of pair.first in the container
+        T pairFirst = pairs[pendIdx].first;
+        int upperBoundExclusive = find_position(pairFirst); // position of the larger element
+        if (upperBoundExclusive < 0) upperBoundExclusive = _container.size();
+
+        int insertPos = binary_search_range(0, upperBoundExclusive, pending[pendIdx]);
+        _container.insert(_container.begin() + insertPos, pending[pendIdx]);
+    }
+
+    // If odd size original list, insert leftover value
+    if (_value != -1) {
+        int pos = binary_search_range(0, _container.size(), _value);
+        _container.insert(_container.begin() + pos, _value);
+    }
+
+    _time = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
+}
+
+template <typename Container>
+typename PmergeMe<Container>::vector_pair PmergeMe<Container>::generate_pairs(Container &data) {
+    vector_pair pairs;
+
+    // If the size of the data is odd, we need to store the last element
+    if (data.size() % 2 != 0) {
+        _value = data.back();
+        data.pop_back();
+    }
+
+size_type i = 0;
+    while(i < data.size())
     {
-        if (guidePairs[i].first > guidePairs[i+1].first)
-        {
-            std::pair<unsigned int,unsigned int> tmp = guidePairs[i];
-            guidePairs[i] = guidePairs[i+1];
-            guidePairs[i+1] = tmp;
+        if (lessThan(data[i], data[i + 1])) {
+            std::swap(data[i], data[i + 1]);
+        }
+
+        pairs.push_back(std::make_pair(data[i], data[i + 1]));
+        i += 2;
+    }
+    return pairs;
+}
+
+template <typename Container>
+void PmergeMe<Container>::sort_pairs(vector_pair &pairs) {
+    if (pairs.size() <= 1) {
+        return; // Base case: Nothing to sort
+    }
+
+    // Divide the vector into two halves
+    size_type middle = pairs.size() / 2;
+    vector_pair left(pairs.begin(), pairs.begin() + middle);
+    vector_pair right(pairs.begin() + middle, pairs.end());
+
+    // Recursively sort the two halves
+    sort_pairs(left);
+    sort_pairs(right);
+
+   // Merge the sorted halves
+    Merge_Sorted_halves(left, right, pairs);
+}
+
+template <typename Container>
+void   PmergeMe<Container>::Merge_Sorted_halves( vector_pair leftHalf, vector_pair rightHalf, vector_pair &pairs)
+{
+    size_type leftIdx = 0;
+    size_type rightIdx = 0;
+    size_type idx = 0;
+
+    while (leftIdx < leftHalf.size() && rightIdx < rightHalf.size()) {
+        // compare the first elements of the pair (these are the larger elements of original pairs)
+        if (lessThan(leftHalf[leftIdx].first, rightHalf[rightIdx].first)) {
+            pairs[idx++] = leftHalf[leftIdx++];
+        } else {
+            pairs[idx++] = rightHalf[rightIdx++];
         }
     }
 
-    printPairsMinMax("[deque ] step 2:", guidePairs, hasStraggler, straggler);
-
-    std::vector< std::pair<unsigned int,unsigned int> > next = guidePairs;
-    for (std::size_t j = 0; j + 3 < guidePairs.size(); j += 4)
-    {
-        next[j + 0] = guidePairs[j + 2];
-        next[j + 1] = guidePairs[j + 3];
-        next[j + 2] = guidePairs[j + 0];
-        next[j + 3] = guidePairs[j + 1];
+    while (leftIdx < leftHalf.size()) {
+        pairs[idx++] = leftHalf[leftIdx++];
     }
-    guidePairs.swap(next);
 
-    printPairsMinMax("[deque ] step 3:", guidePairs, hasStraggler, straggler);
+    while (rightIdx < rightHalf.size()) {
+        pairs[idx++] = rightHalf[rightIdx++];
+    }
+}
 
-    std::sort(pairs.begin(), pairs.end(), pairFirstLess);
+template <typename Container>
+int PmergeMe<Container>::binary_search_range(int left, int rightExclusive, int target) {
+    // classic lower_bound in [left, rightExclusive)
+    while (left < rightExclusive) {
+        int mid = left + (rightExclusive - left) / 2;
+        if (lessThan(_container[mid], target)) {
+            left = mid + 1;
+        } else {
+            // no equality branch to avoid second comparison
+            rightExclusive = mid;
+        }
+    }
+    return left;
+}
 
-    printPairsMinMax("[deque ] step 4:", guidePairs, hasStraggler, straggler);
+template <typename Container>
+int_vector PmergeMe<Container>::generate_indexes(size_t size) {
+    int_vector indexes;
+    int jacobsthalSequence[size + 1];
 
-    std::deque<unsigned int> chain;
-    std::deque<unsigned int> pend;
-    buildInitialChainDeque(pairs, chain, pend);
+    jacobsthalSequence[0] = 0;
+    jacobsthalSequence[1] = 1;
+    int lastJacobsthalNumber = 2;
 
-    // Debug: print initial main chain (S), pend elements (P), and straggler before insertions
-    std::cout << "[deque ] initial main:";
-    for (std::size_t i = 0; i < chain.size(); ++i)
-        std::cout << ' ' << chain[i];
-    std::cout << std::endl;
-    std::cout << "[deque ] initial pend:";
-    for (std::size_t i = 0; i < pend.size(); ++i)
-        std::cout << ' ' << pend[i];
-    std::cout << std::endl;
-    if (hasStraggler)
-        std::cout << "[deque ] straggler: " << straggler << std::endl;
-
-    if (!pend.empty())
+    for (size_t i = 2; indexes.size() < size; i++)
     {
-        std::vector<std::size_t> order = buildJacobsthalOrderDeque(pend.size());
-        for (std::size_t k = 0; k < order.size(); ++k)
+        // Generate the next Jacobsthal number
+        jacobsthalSequence[i] = jacobsthalSequence[i - 1] + 2 * jacobsthalSequence[i - 2];
+
+        if(i != 2)
         {
-            std::size_t pIndex = order[k];
-            if (pIndex >= pend.size())
-                continue;
+            indexes.push_back(jacobsthalSequence[i]);
 
-            unsigned int big = pairs[pIndex].first;
-            std::size_t posBig = 0;
-            while (posBig < chain.size() && chain[posBig] != big)
-                ++posBig;
-            if (posBig == chain.size())
-                posBig = chain.size();
+        }
 
-            binaryInsertDeque(chain, pend[pIndex], posBig);
+        // Push back the indexes between the last Jacobsthal number and the current one
+        for (int j = jacobsthalSequence[i] - 1; j > lastJacobsthalNumber; j--)
+            indexes.push_back(j);
+
+        // Update the last Jacobsthal number
+        lastJacobsthalNumber = jacobsthalSequence[i];
+    }
+    return (indexes);
+}
+
+template<typename Container>
+void PmergeMe<Container>::print() const {
+    for (size_t i = 0; i < _container.size(); i++) {
+        std::cout << _container[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+template<typename Container>
+void PmergeMe<Container>::benchmark() const {
+    std::cout
+            <<	"Time to process a range of " << _container.size()
+            << " elements with std::" << getContainerName< Container >()
+            << " : " << std::fixed << std::setprecision(5) << _time << " us"
+            << std::endl;
+}
+
+template<typename Container>
+bool PmergeMe<Container>::lessThan(const T &a, const T &b) {
+    ++_comparisons;
+    return a < b;
+}
+
+template<typename Container>
+int PmergeMe<Container>::find_position(const T &value) const {
+    for (size_t i = 0; i < _container.size(); ++i) {
+        if (_container[i] == value) return static_cast<int>(i);
+    }
+    return -1;
+}
+
+template<typename Container>
+int PmergeMe<Container>::ft_stoa(const char *str) {
+    std::istringstream  ss(str);
+    int                 number;
+
+    ss >> number; // Convert the string
+
+    return (number);
+}
+
+template<typename Container>
+int PmergeMe<Container>::is_number(const std::string& s)
+{
+    if (s.empty() || s[0] == '-') {
+        return (1);
+    }
+
+    size_t i = 0;
+
+    if (s[0] == '+' && s.length() == 1) {
+        return (1);
+    } else if (s[0] == '+') {
+        i++;
+    }
+
+    for (; i < s.length(); i++) {
+        if (!std::isdigit(s[i])) {
+            return (1);
         }
     }
 
-    if (hasStraggler)
-    {
-        binaryInsertDeque(chain, straggler, chain.size());
-    }
-
-    output.swap(chain);
+    return (0);
 }
 
-void PmergeMe::sortDeque(const std::deque<unsigned int>& input, std::deque<unsigned int>& output, double& timeMicroseconds)
-{
-    std::clock_t start = std::clock();
-    fordJohnsonDeque(input, output);
-    std::clock_t end = std::clock();
-    timeMicroseconds = (double)(end - start) * 1e6 / (double)CLOCKS_PER_SEC;
-}
+template class PmergeMe< std::vector<int> >;
+template class PmergeMe< std::deque<int> >;

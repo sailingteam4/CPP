@@ -110,25 +110,6 @@ void PmergeMe::displaySequence(const std::string& label, const std::vector<int>&
 }
 
 template<typename Container>
-void PmergeMe::insertionSort(Container& container, size_t start, size_t end)
-{
-    for (size_t i = start + 1; i < end; ++i)
-    {
-        int key = container[i];
-        size_t j = i;
-        while (j > start)
-        {
-            _comparisons++;
-            if (container[j - 1] <= key)
-                break;
-            container[j] = container[j - 1];
-            j--;
-        }
-        container[j] = key;
-    }
-}
-
-template<typename Container>
 size_t PmergeMe::binarySearch(const Container& container, int value, size_t start, size_t end)
 {
     while (start < end)
@@ -183,7 +164,6 @@ void PmergeMe::fordJohnsonSort(Container& container)
         return;
     }
     
-    // Ford-Johnson merge-insertion algorithm for n >= 4
     bool hasOdd = (n % 2 == 1);
     int oddElement = hasOdd ? container[n - 1] : 0;
     size_t pairCount = n / 2;
@@ -376,7 +356,5 @@ void PmergeMe::run(int argc, char** argv)
 
 template void PmergeMe::fordJohnsonSort<std::vector<int> >(std::vector<int>& container);
 template void PmergeMe::fordJohnsonSort<std::deque<int> >(std::deque<int>& container);
-template void PmergeMe::insertionSort<std::vector<int> >(std::vector<int>& container, size_t start, size_t end);
-template void PmergeMe::insertionSort<std::deque<int> >(std::deque<int>& container, size_t start, size_t end);
 template size_t PmergeMe::binarySearch<std::vector<int> >(const std::vector<int>& container, int value, size_t start, size_t end);
 template size_t PmergeMe::binarySearch<std::deque<int> >(const std::deque<int>& container, int value, size_t start, size_t end);

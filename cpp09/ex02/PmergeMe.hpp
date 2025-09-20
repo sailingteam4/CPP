@@ -22,9 +22,6 @@ class PmergeMe
         static void fordJohnsonSort(Container& container);
         
         template<typename Container>
-        static void insertionSort(Container& container, size_t start, size_t end);
-        
-        template<typename Container>
         static size_t binarySearch(const Container& container, int value, size_t start, size_t end);
         
         static void validateInput(int argc, char** argv);

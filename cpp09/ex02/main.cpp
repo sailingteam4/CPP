@@ -1,46 +1,7 @@
 #include "PmergeMe.hpp"
-#include <iostream>
-#include <vector>
-#include <list>
-#include <iomanip>
-// #include <ctime>
 
-void printBeforeSort(char **av)
+int main(int argc, char** argv)
 {
-    size_t i = 0;
-    std::cout << "Before:  ";
-    while (av[++i])
-        std::cout << av[i] << " " ;
-    std::cout << std::endl;
-}
-
-int main(int ac, char **av)
-{
-    std::vector<unsigned int> vec;
-    std::list<unsigned int> lst;
-    clock_t start_time;
-    clock_t end_time;
-    double vector_process;
-    double list_process;
-    if (ac >= 2)
-    {
-        start_time = clock();
-        lst = __fordJohnson_sort_list(av);
-        end_time = clock();
-        list_process = (double)(end_time - start_time) / (CLOCKS_PER_SEC / 1000000.0);
-        if (!lst.empty())
-        {
-            g_comparison_count = 0; // Reset counter before vector sorting
-            start_time = clock();
-            vec = __fordJohnson_sort_vector(av);
-            end_time = clock();
-            vector_process = (double)(end_time - start_time) / (CLOCKS_PER_SEC / 1000000.0);
-            printBeforeSort(av);
-            printSortedVec(vec);
-            std::cout << "Time to process a range of  " << vec.size() << " elements with std::vector<> : " << std::fixed << vector_process << " us "<< std::endl;
-            std::cout << "Time to process a range of  " << lst.size() << " elements with std::list<> : " << std::fixed << list_process << " us " << std::endl;
-            std::cout << "Number of comparisons: " << g_comparison_count << std::endl;
-        }
-        // printSortedVec(vec);
-    }
+    PmergeMe::run(argc, argv);
+    return (0);
 }

@@ -109,8 +109,8 @@ void PmergeMe::displaySequence(const std::string& label, const std::vector<int>&
     std::cout << std::endl;
 }
 
-// Helper functions for vector
-void PmergeMe::insertionSortVector(std::vector<int>& container, size_t start, size_t end)
+template<typename Container>
+void PmergeMe::insertionSort(Container& container, size_t start, size_t end)
 {
     for (size_t i = start + 1; i < end; ++i)
     {
@@ -128,7 +128,8 @@ void PmergeMe::insertionSortVector(std::vector<int>& container, size_t start, si
     }
 }
 
-size_t PmergeMe::binarySearchVector(const std::vector<int>& container, int value, size_t start, size_t end)
+template<typename Container>
+size_t PmergeMe::binarySearch(const Container& container, int value, size_t start, size_t end)
 {
     while (start < end)
     {
@@ -145,42 +146,8 @@ size_t PmergeMe::binarySearchVector(const std::vector<int>& container, int value
     return start;
 }
 
-void PmergeMe::insertionSortDeque(std::deque<int>& container, size_t start, size_t end)
-{
-    for (size_t i = start + 1; i < end; ++i)
-    {
-        int key = container[i];
-        size_t j = i;
-        while (j > start)
-        {
-            _comparisons++;
-            if (container[j - 1] <= key)
-                break;
-            container[j] = container[j - 1];
-            j--;
-        }
-        container[j] = key;
-    }
-}
-
-size_t PmergeMe::binarySearchDeque(const std::deque<int>& container, int value, size_t start, size_t end)
-{
-    while (start < end)
-    {
-        size_t mid = start + (end - start) / 2;
-        _comparisons++;
-        if (container[mid] < value)
-        {
-            start = mid + 1;
-        } else
-        {
-            end = mid;
-        }
-    }
-    return start;
-}
-
-void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
+template<typename Container>
+void PmergeMe::fordJohnsonSort(Container& container)
 {
     size_t n = container.size();
     if (n <= 1)
@@ -238,13 +205,13 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
     // Step 2: Sort larger elements recursively
     if (pairs.size() > 1)
     {
-        std::vector<int> largerElements;
+        Container largerElements;
         for (size_t i = 0; i < pairs.size(); ++i)
         {
             largerElements.push_back(pairs[i].first);
         }
         
-        fordJohnsonSortVector(largerElements);
+        fordJohnsonSort(largerElements);
         
         // Reorder pairs based on sorted larger elements
         std::vector<std::pair<int, int> > sortedPairs(pairs.size());
@@ -264,7 +231,7 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
     }
     
     // Step 3: Build main chain
-    std::vector<int> mainChain;
+    Container mainChain;
     
     // Insert first smaller element (guaranteed smallest)
     if (!pairs.empty())
@@ -307,7 +274,7 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
                         }
                     }
                     
-                    size_t insertPos = binarySearchVector(mainChain, pairs[idx].second, 0, upperBound);
+                    size_t insertPos = binarySearch(mainChain, pairs[idx].second, 0, upperBound);
                     mainChain.insert(mainChain.begin() + insertPos, pairs[idx].second);
                     inserted[idx] = true;
                 }
@@ -329,7 +296,7 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
                     }
                 }
                 
-                size_t insertPos = binarySearchVector(mainChain, pairs[i].second, 0, upperBound);
+                size_t insertPos = binarySearch(mainChain, pairs[i].second, 0, upperBound);
                 mainChain.insert(mainChain.begin() + insertPos, pairs[i].second);
             }
         }
@@ -338,174 +305,7 @@ void PmergeMe::fordJohnsonSortVector(std::vector<int>& container)
     // Step 5: Insert odd element if it exists
     if (hasOdd)
     {
-        size_t insertPos = binarySearchVector(mainChain, oddElement, 0, mainChain.size());
-        mainChain.insert(mainChain.begin() + insertPos, oddElement);
-    }
-    
-    container = mainChain;
-}
-
-// Ford-Johnson algorithm implementation for std::deque
-void PmergeMe::fordJohnsonSortDeque(std::deque<int>& container)
-{
-    size_t n = container.size();
-    if (n <= 1)
-        return;
-    
-    // Handle base cases with known optimal comparison counts
-    if (n == 2)
-    {
-        _comparisons++;
-        if (container[0] > container[1])
-        {
-            std::swap(container[0], container[1]);
-        }
-        return;
-    }
-    
-    if (n == 3)
-    {
-        _comparisons++;
-        if (container[0] > container[1])
-        {
-            std::swap(container[0], container[1]);
-        }
-        _comparisons++;
-        if (container[1] > container[2])
-        {
-            std::swap(container[1], container[2]);
-            _comparisons++;
-            if (container[0] > container[1])
-            {
-                std::swap(container[0], container[1]);
-            }
-        }
-        return;
-    }
-    
-    // Ford-Johnson merge-insertion algorithm for n >= 4
-    bool hasOdd = (n % 2 == 1);
-    int oddElement = hasOdd ? container[n - 1] : 0;
-    size_t pairCount = n / 2;
-    
-    // Step 1: Pair elements and find larger/smaller elements
-    std::vector<std::pair<int, int> > pairs;
-    for (size_t i = 0; i < pairCount; ++i)
-    {
-        _comparisons++;
-        if (container[2 * i] > container[2 * i + 1])
-        {
-            pairs.push_back(std::make_pair(container[2 * i], container[2 * i + 1]));
-        } else
-        {
-            pairs.push_back(std::make_pair(container[2 * i + 1], container[2 * i]));
-        }
-    }
-    
-    // Step 2: Sort larger elements recursively
-    if (pairs.size() > 1)
-    {
-        std::deque<int> largerElements;
-        for (size_t i = 0; i < pairs.size(); ++i)
-        {
-            largerElements.push_back(pairs[i].first);
-        }
-        
-        fordJohnsonSortDeque(largerElements);
-        
-        // Reorder pairs based on sorted larger elements
-        std::vector<std::pair<int, int> > sortedPairs(pairs.size());
-        for (size_t i = 0; i < largerElements.size(); ++i)
-        {
-            for (size_t j = 0; j < pairs.size(); ++j)
-            {
-                if (pairs[j].first == largerElements[i])
-                {
-                    sortedPairs[i] = pairs[j];
-                    pairs[j].first = -1;
-                    break;
-                }
-            }
-        }
-        pairs = sortedPairs;
-    }
-    
-    // Step 3: Build main chain
-    std::deque<int> mainChain;
-    
-    // Insert first smaller element (guaranteed smallest)
-    if (!pairs.empty())
-    {
-        mainChain.push_back(pairs[0].second);
-    }
-    
-    // Insert all larger elements
-    for (size_t i = 0; i < pairs.size(); ++i)
-    {
-        mainChain.push_back(pairs[i].first);
-    }
-    
-    // Step 4: Insert remaining smaller elements using Jacobsthal order
-    if (pairs.size() > 1)
-    {
-        std::vector<size_t> jacobsthal = generateJacobsthalSequence(pairs.size() + 2);
-        std::vector<bool> inserted(pairs.size(), false);
-        inserted[0] = true; // First element already inserted
-        
-        for (size_t jIdx = 2; jIdx < jacobsthal.size(); ++jIdx)
-        {
-            size_t jacobsthalNum = jacobsthal[jIdx];
-            size_t prevJacobsthal = jacobsthal[jIdx - 1];
-            
-            // Insert in reverse order within Jacobsthal group
-            for (size_t pos = std::min(jacobsthalNum, pairs.size()); pos > prevJacobsthal && pos > 0; --pos)
-            {
-                size_t idx = pos - 1;
-                if (idx < pairs.size() && !inserted[idx])
-                {
-                    // Find upper bound (position of corresponding larger element)
-                    size_t upperBound = mainChain.size();
-                    for (size_t k = 0; k < mainChain.size(); ++k)
-                    {
-                        if (mainChain[k] == pairs[idx].first)
-                        {
-                            upperBound = k;
-                            break;
-                        }
-                    }
-                    
-                    size_t insertPos = binarySearchDeque(mainChain, pairs[idx].second, 0, upperBound);
-                    mainChain.insert(mainChain.begin() + insertPos, pairs[idx].second);
-                    inserted[idx] = true;
-                }
-            }
-        }
-        
-        // Insert any remaining elements
-        for (size_t i = 1; i < pairs.size(); ++i)
-        {
-            if (!inserted[i])
-            {
-                size_t upperBound = mainChain.size();
-                for (size_t k = 0; k < mainChain.size(); ++k)
-                {
-                    if (mainChain[k] == pairs[i].first)
-                    {
-                        upperBound = k;
-                        break;
-                    }
-                }
-                
-                size_t insertPos = binarySearchDeque(mainChain, pairs[i].second, 0, upperBound);
-                mainChain.insert(mainChain.begin() + insertPos, pairs[i].second);
-            }
-        }
-    }
-    
-    // Step 5: Insert odd element if it exists
-    if (hasOdd)
-    {
-        size_t insertPos = binarySearchDeque(mainChain, oddElement, 0, mainChain.size());
+        size_t insertPos = binarySearch(mainChain, oddElement, 0, mainChain.size());
         mainChain.insert(mainChain.begin() + insertPos, oddElement);
     }
     
@@ -517,7 +317,7 @@ std::vector<int> PmergeMe::sortWithVector(const std::vector<int>& input, double&
     double startTime = getCurrentTime();
     
     std::vector<int> result = input;
-    fordJohnsonSortVector(result);
+    fordJohnsonSort(result);
     
     double endTime = getCurrentTime();
     timeElapsed = endTime - startTime;
@@ -530,7 +330,7 @@ std::deque<int> PmergeMe::sortWithDeque(const std::vector<int>& input, double& t
     double startTime = getCurrentTime();
     
     std::deque<int> result(input.begin(), input.end());
-    fordJohnsonSortDeque(result);
+    fordJohnsonSort(result);
     
     double endTime = getCurrentTime();
     timeElapsed = endTime - startTime;
@@ -573,3 +373,10 @@ void PmergeMe::run(int argc, char** argv)
         std::cerr << e.what() << std::endl;
     }
 }
+
+template void PmergeMe::fordJohnsonSort<std::vector<int> >(std::vector<int>& container);
+template void PmergeMe::fordJohnsonSort<std::deque<int> >(std::deque<int>& container);
+template void PmergeMe::insertionSort<std::vector<int> >(std::vector<int>& container, size_t start, size_t end);
+template void PmergeMe::insertionSort<std::deque<int> >(std::deque<int>& container, size_t start, size_t end);
+template size_t PmergeMe::binarySearch<std::vector<int> >(const std::vector<int>& container, int value, size_t start, size_t end);
+template size_t PmergeMe::binarySearch<std::deque<int> >(const std::deque<int>& container, int value, size_t start, size_t end);
